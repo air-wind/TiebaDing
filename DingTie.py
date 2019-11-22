@@ -36,7 +36,7 @@ class DingTie(object):
 
     # 获取随机回复
     def _get_reply_msg(self):
-        reply_msg = random.sample(reply_msgs,1)
+        reply_msg = random.sample(reply_msgs,1)[0]
         return reply_msg
 
     # 顶贴
@@ -49,7 +49,6 @@ class DingTie(object):
         ding_msg = self._get_reply_msg()
         send_js = f"ueditor_replace = document.getElementById('ueditor_replace'); " \
             f"ueditor_replace.innerHTML = '<p>{ding_msg}<\p>'"
-        print(send_js)
         self.driver.execute_script(send_js)
 
         # 点击发送按钮
