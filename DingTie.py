@@ -9,7 +9,9 @@ import string
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementClickInterceptedException
+from selenium.common.exceptions import NoSuchElementException, \
+    TimeoutException, ElementClickInterceptedException, \
+    ElementClickInterceptedException
 from selenium.webdriver.support.wait import WebDriverWait
 
 from TieUrlMap import url_map
@@ -26,8 +28,8 @@ class DingTie(object):
     def create_driver(self):
         if self.mode == "production":
             chrome_options = Options()
-            # chrome_options.add_argument('--headless')
-            # chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--headless')
+            chrome_options.add_argument('--disable-gpu')
             chrome_options.add_argument('log-level=3')
             self.driver = webdriver.Chrome(options=chrome_options)
         else:
@@ -56,15 +58,14 @@ class DingTie(object):
     # 获取随机回复
     def _get_reply_msg(self):
         reply_msg = random.choice(reply_msgs)
-        random_string = "".join(random.sample(string.ascii_letters + string.punctuation, 2))
+        random_string = "".join(random.sample(string.ascii_letters + '!#$%&()*+,-./:;<=>?@[\\]^_`{|}~', 2))
         return reply_msg + random_string
 
     # 顶贴
     def _ding(self, ding_model=None):
         # 定位回复框
-        time.sleep(1)
-        reply_href = self.driver.find_element_by_xpath('/html/body/ul/li[2]/a')
-        reply_href.click()
+        WebDriverWait(self.driver, WAITTIMEOUT, ignored_exceptions=(ElementClickInterceptedException,)) \
+            .until(lambda x: x.find_elements_by_xpath('//a[text()="回复"]'))[0].click()
 
         # 模拟send_key()无效，执行js输入顶贴内容
         ding_msg = self._get_reply_msg()
@@ -74,8 +75,8 @@ class DingTie(object):
 
         # 点击发送按钮
         time.sleep(1)
-        send_button = self.driver.find_element_by_xpath('//*[@id="tb_rich_poster"]/div[3]/div[3]/div/a/span/em')
-        send_button.click()
+        WebDriverWait(self.driver, WAITTIMEOUT) \
+            .until(lambda x: x.find_element_by_xpath('//a[contains(string(.), "发 表")]')).click()
 
         self.log_print("顶贴成功")
 
@@ -90,21 +91,32 @@ class DingTie(object):
                     pass
 
             # 删除
+            time.sleep(1)
             timeout_flag = True
             timeout_loop_time = 0
+            # 刷新出最新的回复
+            self.driver.refresh()
             while timeout_flag and (timeout_loop_time <= 5):
                 try:
-                    WebDriverWait(self.driver, WAITTIMEOUT) \
-                        .until(lambda x: x.find_elements_by_xpath('//a[text()="删除"]'))[-1].click()
-                    WebDriverWait(self.driver, WAITTIMEOUT) \
-                        .until(lambda x: x.find_element_by_xpath('//input[@value="确定"]')).click()
+                    delete_button = WebDriverWait(self.driver, WAITTIMEOUT) \
+                        .until(lambda x: x.find_elements_by_xpath('//a[text()="删除"]'))[-1]
+                    # delete_button用click()方法点击概率性失效，调用js执行
+                    # delete_button.click()
+                    self.driver.execute_script("arguments[0].click();", delete_button)
+                    self.log_print("找到了删除按钮")
                     timeout_flag = False
                 except TimeoutException:
                     self.driver.refresh()
+                    self.log_print("未找到删除按钮")
                 except ElementClickInterceptedException:
+                    self.driver.refresh()
                     self.log_print("点击被打断")
                 finally:
                     timeout_loop_time += 1
+
+            time.sleep(1)
+            WebDriverWait(self.driver, WAITTIMEOUT) \
+                .until(lambda x: x.find_element_by_xpath('//input[@value="确定"]')).click()
 
         self.log_print("删除成功")
 
@@ -155,7 +167,8 @@ class DingTie(object):
 
 
 if __name__ == '__main__':
-    dt = DingTie("production")
+    # dt = DingTie("production")
+    dt = DingTie("")
     dt.create_driver()
 
     # 修改如下
