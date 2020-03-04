@@ -4,6 +4,7 @@
 
 url_map_unique = [
     "6521364031",
+    "6522539908",
 ]
 
 url_map = ["http://tieba.baidu.com/p/"+i for i in url_map_unique]
