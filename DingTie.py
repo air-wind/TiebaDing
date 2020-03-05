@@ -31,7 +31,10 @@ class DingTie(object):
             chrome_options = Options()
             chrome_options.add_argument('--headless')
             chrome_options.add_argument('--disable-gpu')
+            # 更改selenium日志等级
             chrome_options.add_argument('log-level=3')
+            # 去除DevTools listening on ws:....
+            chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
             self.driver = webdriver.Chrome(options=chrome_options)
         else:
             self.driver = webdriver.Chrome()
