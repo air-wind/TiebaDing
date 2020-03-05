@@ -8,3 +8,4 @@ reply_msgs = ["还能领", "快来领吧", "30-5哦", "饿了么最新的包", "
 INTERVAL_MAX = 600
 
 INTERVAL_MIN = 300
+
