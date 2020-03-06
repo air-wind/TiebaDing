@@ -193,7 +193,7 @@ if __name__ == '__main__':
     from apscheduler.triggers.interval import IntervalTrigger
 
     scheduler = BlockingScheduler()
-    trigger = IntervalTrigger(seconds=LOOPDINGINTERVAL+30, start_date=(datetime.datetime.now() + datetime.timedelta(seconds=2)))
+    trigger = IntervalTrigger(seconds=LOOPDINGINTERVAL+90, start_date=(datetime.datetime.now() + datetime.timedelta(seconds=2)))
     scheduler.add_job(dt.change_ck_run, trigger)
     scheduler.start()
     # scheduler.add_job(dt.change_ck_run, 'interval', hours=1, next_run_time=datetime.datetime.now())
